@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+@theme {
+  /* Colors */
+  --color-bg-base:    #e6e3d8;
+  --color-bg-floor:   #111113;
+  --color-bg-panel:   #14141a;
+  --color-bg-raised:  #1c1c22;
+
+  --color-border-subtle: #26262e;
+  --color-border-strong: #3a3a44;
+
+  --color-text-primary: #e8e8ec;
+  --color-text-muted:   #8a8a95;
+  --color-text-faint:   #55555f;
+
+  --color-brand-purple:      #a855f7;
+  --color-brand-purple-dim:  #7c3aed;
+  --color-brand-purple-glow: #c084fc;
+
+  --color-state-safe:   #22c55e;
+  --color-state-warn:   #f59e0b;
+  --color-state-danger: #ef4444;
+  --color-state-slash:  #a855f7;
+  --color-state-dead:   #3f3f46;
+
+  /* Fonts loaded in layout.tsx */
+  --font-sans:  var(--font-ibm), system-ui, sans-serif;
+  --font-pixel: var(--font-press-start), monospace;
+  --font-mono:  var(--font-vt), monospace;
+}
+
+html,
+body {
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+}
+
+/* Warm plaster wall at the top of the room */
+.checker-flat {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse 90% 60% at 50% 0%,
+      #f5f2e8 0%,
+      #e6e3d8 45%,
+      #cfccbf 100%
+    );
+}
+
+/* High-contrast checkered floor at the bottom */
+.checker-floor {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 70vh;
+  z-index: 0;
+  pointer-events: none;
+  background-image: repeating-conic-gradient(
+    #f0ede2 0% 25%,
+    #0a0a0d 0% 50%
+  );
+  background-size: 160px 160px;
+  transform: perspective(700px) rotateX(68deg) scale(1.9);
+  transform-origin: center bottom;
+  opacity: 1;
+  -webkit-mask-image: linear-gradient(to top, black 0%, black 55%, transparent 100%);
+  mask-image: linear-gradient(to top, black 0%, black 55%, transparent 100%);
+}
+
+/* Dark spotlight on the edges — white room stays white in the center */
+.vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse 60% 50% at 50% 45%,
+      transparent 0%,
+      transparent 25%,
+      rgba(0, 0, 0, 0.45) 60%,
+      rgba(0, 0, 0, 0.85) 90%,
+      rgba(0, 0, 0, 0.95) 100%
+    );
+  transition: background 400ms ease;
+}
+
+/* Glitch animation used on attack detection */
+@keyframes glitch {
+  0%, 100% { text-shadow: 0 0 12px rgba(168, 85, 247, 0.5); transform: translate(0); }
+  20% { text-shadow: 2px 0 #ef4444, -2px 0 #22d3ee; transform: translate(-1px, 1px); }
+  40% { text-shadow: -2px 0 #ef4444, 2px 0 #22d3ee; transform: translate(1px, -1px); }
+  60% { text-shadow: 2px 0 #ef4444, -2px 0 #22d3ee; transform: translate(0); }
+}
+.glitch {
+  animation: glitch 180ms steps(2) 3;
+}
