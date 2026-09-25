@@ -5,18 +5,20 @@ describe("BenefitsPortal", function () {
   let portal: any;
   let owner: any, sarah: any, attacker: any;
   let ethers: any;
+  let networkHelpers: any;
 
   beforeEach(async function () {
-    // Create a network connection — required in Hardhat 3
+    // Connect ONCE per test — this is our chain for this test
     const connection = await hre.network.connect();
     ethers = connection.ethers;
+    networkHelpers = connection.networkHelpers;
+
     const signers = await ethers.getSigners();
     [owner, sarah, attacker] = signers;
 
     const Portal = await ethers.getContractFactory("BenefitsPortal");
     portal = await Portal.deploy();
 
-    // Fund the contract so it can pay benefits
     await owner.sendTransaction({
       to: await portal.getAddress(),
       value: ethers.parseEther("1.0"),
@@ -28,9 +30,7 @@ describe("BenefitsPortal", function () {
     await portal.connect(sarah).lockStake({ value: stake });
     await portal.connect(sarah).claimBenefit();
 
-    // Fast-forward 60 seconds using network helpers
-    const { networkHelpers } = await hre.network.connect();
-    await networkHelpers.time.increase(61);
+    await networkHelpers.time.increase(61);   // ← uses the SAME connection
 
     await portal.connect(sarah).withdrawStake();
   });
@@ -49,7 +49,6 @@ describe("BenefitsPortal", function () {
     await expect(portal.connect(owner).executeSlash())
       .to.be.revertedWith("Dispute window active");
 
-    const { networkHelpers } = await hre.network.connect();
     await networkHelpers.time.increase(31);
 
     await portal.connect(owner).executeSlash();
@@ -60,7 +59,6 @@ describe("BenefitsPortal", function () {
     await portal.connect(attacker).lockStake({ value: stake });
     await portal.connect(owner).submitSlashProposal([attacker.address]);
 
-    const { networkHelpers } = await hre.network.connect();
     await networkHelpers.time.increase(31);
     await portal.connect(owner).executeSlash();
     await networkHelpers.time.increase(61);
