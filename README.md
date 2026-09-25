@@ -12,3 +12,13 @@
 1. `cd contracts && npx hardhat node` (Terminal 1 — keep running)
 2. `npx hardhat run scripts/deploy.ts --network localhost` (Terminal 2)
 3. Copy the contract address + ABI to Luna (Backend) and Ayah (Frontend)
+
+## Project Status
+
+| Layer | Owner | Status |
+|---|---|---|
+| Smart Contract | Person A | ✅ Complete, 4/4 tests passing |
+| Backend / Detection | Person B | ⏳ Pending |
+| Frontend / UI | Person C | ⏳ Pending |
+
+See `docs/HANDOFF.md` for contract address, ABI, and integration notes.
