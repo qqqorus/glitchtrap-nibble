@@ -1,0 +1,19 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "Swarm detection, stake scaling and slashing backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "swarm": "node simulation/simulate-swarm.js"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.4",
+    "ethers": "^6.17.0",
+    "express": "^5.2.1",
+    "ws": "^8.21.3"
+  }
+}
