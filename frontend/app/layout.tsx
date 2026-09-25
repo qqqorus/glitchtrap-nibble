@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Press_Start_2P, VT323, IBM_Plex_Sans } from "next/font/google";
+import { Rubik_Glitch, VT323, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
 
-const pixel = Press_Start_2P({
+const rubikGlitch = Rubik_Glitch({
   weight: "400",
   subsets: ["latin"],
-  variable: "--font-press-start",
+  variable: "--font-rubik-glitch",
 });
 
 const vt = VT323({
@@ -33,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${ibm.variable} ${pixel.variable} ${vt.variable} font-sans bg-bg-base text-text-primary antialiased`}
+        className={`${ibm.variable} ${rubikGlitch.variable} ${vt.variable} font-sans bg-bg-base text-text-primary antialiased`}
       >
         <div className="checker-flat" aria-hidden />
         <div className="checker-floor" aria-hidden />
