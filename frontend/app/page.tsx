@@ -6,6 +6,28 @@ import { UserPortalPanel } from "@/components/portal/UserPortalPanel";
 import { useDefenseStore } from "@/stores/defense";
 import { useGraphStore } from "@/stores/graph";
 import { useBackendSocket } from "@/hooks/useBackendSocket";
+import { NetworkGraph } from "@/components/graph/NetworkGraph";
+import { DefenseStats } from "@/components/dashboard/DefenseStats";
+import { AlertFeed } from "@/components/dashboard/AlertFeed";
+import { ActivitySpike } from "@/components/dashboard/ActivitySpike";
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:3001";
+
+async function callBackend(path: string, body?: object) {
+  try {
+    const res = await fetch(`${BACKEND_URL}${path}`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body ?? {}),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      useDefenseStore.getState().pushAlert("warn", data.error ?? `Backend ${path} failed`);
+    }
+  } catch {
+    useDefenseStore.getState().pushAlert("warn", "Backend not reachable on :3001. Is `npm start` running?");
+  }
+}
 import type { WsMessage } from "@/lib/types";
 
 export default function Home() {
@@ -100,26 +122,50 @@ export default function Home() {
         </Panel>
 
         <Panel title="Network Graph">
-          <div className="p-4 text-sm text-text-muted">Graph — Phase 4</div>
+          <NetworkGraph />
         </Panel>
 
         <Panel title="Defense Dashboard">
-          <div className="p-4 space-y-2">
+          <div className="h-full overflow-y-auto p-4 space-y-4">
+            <DefenseStats />
+            <ActivitySpike />
+            <AlertFeed />
+
+            {/* Live backend controls */}
             <button
-              onClick={() => runAttack({ swarmSize: 1000, disputeSeconds: 30 })}
+              onClick={() => callBackend("/simulate", { size: 1000 })}
               className="block w-full text-left px-3 py-2 rounded border border-state-danger/40 text-state-danger hover:bg-state-danger/10 text-sm"
             >
-              ▸ Launch swarm (mock)
+              ▸ Launch swarm (live)
             </button>
             <button
-              onClick={reset}
+              onClick={() => callBackend("/submit-slash")}
+              className="block w-full text-left px-3 py-2 rounded border border-state-slash/40 text-state-slash hover:bg-state-slash/10 text-sm"
+            >
+              ⚡ Submit slash proposal
+            </button>
+            <button
+              onClick={() => callBackend("/reset")}
               className="block w-full text-left px-3 py-2 rounded border border-border-subtle hover:bg-bg-raised text-sm text-text-muted"
             >
-              ▸ Reset (mock)
+              ▸ Reset (live)
             </button>
-            <p className="pt-2 text-xs text-text-faint">
-              Live backend on ws://localhost:3001 is connected.
-            </p>
+
+            {/* Offline fallback: scripted demo, no backend needed */}
+            <div className="pt-2 border-t border-border-subtle space-y-2">
+              <button
+                onClick={() => runAttack({ swarmSize: 1000, disputeSeconds: 30 })}
+                className="block w-full text-left px-3 py-1.5 rounded border border-border-subtle hover:bg-bg-raised text-xs text-text-faint"
+              >
+                ▸ Launch swarm (mock)
+              </button>
+              <button
+                onClick={reset}
+                className="block w-full text-left px-3 py-1.5 rounded border border-border-subtle hover:bg-bg-raised text-xs text-text-faint"
+              >
+                ▸ Reset (mock)
+              </button>
+            </div>
           </div>
         </Panel>
       </div>
