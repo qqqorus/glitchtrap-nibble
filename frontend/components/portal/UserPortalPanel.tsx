@@ -32,6 +32,22 @@ export function UserPortalPanel() {
     functionName: "getCurrentStake",
     query: { refetchInterval: 3000 },
   });
+
+  const { data: claimData } = useReadContract({
+    ...contractConfig,
+    functionName: "claims",
+    args: address ? [address] : undefined,
+    query: { enabled: !!address, refetchInterval: 3000 },
+  });
+
+  const { data: hasWithdrawnOnChain } = useReadContract({
+    ...contractConfig,
+    functionName: "hasWithdrawn",
+    args: address ? [address] : undefined,
+    query: { enabled: !!address, refetchInterval: 3000 },
+  });
+
+  
   const requiredStake = currentStakeWei ? toAed(currentStakeWei as bigint) : 20;
 
   const lock = useWriteContract();
