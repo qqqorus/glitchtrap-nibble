@@ -27,7 +27,6 @@ export function UserPortalPanel() {
 
   const { hasStaked, hasClaimed, stakeReturned, setUserAddress, setHasStaked, setHasClaimed, setStakeReturned } = usePortalStore();
 
-  const [lockTimestamp, setLockTimestamp] = useState<number | null>(null);
   const [now, setNow] = useState(Date.now());
 
   const { data: currentStakeWei } = useReadContract({
@@ -101,12 +100,12 @@ export function UserPortalPanel() {
   ]);
 
   useEffect(() => {
-    if (lockReceipt.isSuccess) {
+    if (lockReceipt.isSuccess && address) {
       setHasStaked(true);
-      setLockTimestamp(Date.now());
+      addRealUser(address);
       pushAlert("success", `Stake locked: ${aed(requiredStake)}`);
     }
-  }, [lockReceipt.isSuccess]);
+  }, [lockReceipt.isSuccess, address]);
 
   useEffect(() => {
     if (claimReceipt.isSuccess) {
@@ -125,10 +124,15 @@ export function UserPortalPanel() {
   const busy = lock.isPending || lockReceipt.isLoading || claim.isPending || claimReceipt.isLoading || withdraw.isPending || withdrawReceipt.isLoading;
 
   const LOCK_DURATION_SEC =30;
-  const secondsRemaining = lockTimestamp
-    ? Math.max(0, LOCK_DURATION_SEC - Math.floor((now - lockTimestamp) / 1000))
-    : 0;
-  const canWithdraw = secondsRemaining === 0;
+  const onChainLockTs = claimData
+  ? Number((claimData as readonly [bigint, bigint, boolean, boolean, boolean])[1])
+  : 0;
+
+const secondsRemaining = onChainLockTs > 0
+  ? Math.max(0, onChainLockTs + LOCK_DURATION_SEC - Math.floor(now / 1000))
+  : 0;
+
+const canWithdraw = secondsRemaining === 0 && hasClaimed;
 
   return (
     <div className="p-4 space-y-4">
@@ -191,11 +195,7 @@ export function UserPortalPanel() {
         )}
 
         {hasClaimed && !stakeReturned && (
-          <>
-            <p className="text-xs text-state-warn text-center">
-              DEBUG: lockTimestamp={String(lockTimestamp)} now={now} secondsRemaining={secondsRemaining}
-            </p>
-            <button
+          <button
               onClick={() => withdraw.mutate({ ...contractConfig, functionName: "withdrawStake", gas: BigInt(300000) })}
               disabled={busy || wrongChain || !canWithdraw}
               className="w-full px-3 py-2 rounded border border-border-strong text-text-primary text-sm font-medium hover:bg-bg-raised disabled:opacity-50 transition-colors"
@@ -206,7 +206,6 @@ export function UserPortalPanel() {
                 ? "Withdraw Stake"
                 : `Withdraw in ${secondsRemaining}s`}
             </button>
-          </>
         )}
 
         {stakeReturned && (
