@@ -66,4 +66,20 @@ describe("BenefitsPortal", function () {
     await expect(portal.connect(attacker).withdrawStake())
       .to.be.revertedWith("Slashed");
   });
+
+  it("Same address can lock again after a full cycle", async function () {
+    const stake = await portal.getCurrentStake();
+    
+    // First cycle
+    await portal.connect(sarah).lockStake({ value: stake });
+    await portal.connect(sarah).claimBenefit();
+    await networkHelpers.time.increase(61);
+    await portal.connect(sarah).withdrawStake();
+    
+    // Second cycle — this would fail without the fix
+    await portal.connect(sarah).lockStake({ value: stake });
+    const claim = await portal.claims(sarah.address);
+    expect(claim.amount).to.equal(stake);
+  });
 });
+

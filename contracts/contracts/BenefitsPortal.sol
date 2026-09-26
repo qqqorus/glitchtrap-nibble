@@ -72,11 +72,15 @@ contract BenefitsPortal {
         require(!c.slashed, "Slashed");
         require(block.timestamp >= c.timestamp + lockDuration, "Still locked");
         
-        c.withdrawn = true;
-        (bool success, ) = msg.sender.call{value: c.amount}("");
+        uint256 amount = c.amount;
+        
+        // Reset the claim so this address can lock again
+        delete claims[msg.sender];
+        
+        (bool success, ) = msg.sender.call{value: amount}("");
         require(success, "Transfer failed");
         
-        emit StakeWithdrawn(msg.sender, c.amount);
+        emit StakeWithdrawn(msg.sender, amount);
     }
     
     function getCurrentStake() public view returns (uint256) {
