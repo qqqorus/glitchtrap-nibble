@@ -53,7 +53,9 @@ export const useDefenseStore = create<DefenseState>((set, get) => ({
 
   setStatus: (status) => set({ status }),
 
-  reset: () =>
+  reset: () => {
+    useGraphStore.getState().reset();
+    usePortalStore.getState().reset();
     set({
       status: "NORMAL",
       multiplier: 1,
@@ -66,7 +68,8 @@ export const useDefenseStore = create<DefenseState>((set, get) => ({
       alerts: [],
       slashProposal: undefined,
       slashExecuted: false,
-    }),
+    });
+  },
 
   runSarah: () => {
     const { pushAlert } = get();
