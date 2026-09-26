@@ -101,3 +101,8 @@ body {
 .glitch {
   animation: glitch 180ms steps(2) 3;
 }
+
+@keyframes edge-fade-in {
+  from { opacity: 0; }
+  to { opacity: 0.4; }
+}
