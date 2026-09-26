@@ -315,7 +315,7 @@ The backend log should show both detection signals, `✓ triggerAttackDetection(
 
 ## Acknowledgments
 
-Built during [Hackathon Name] for the **Sybil Resistance Under Agent Swarms** problem statement.
+Built during **Bit n Build '26** for the **Sybil Resistance Under Agent Swarms** problem statement.
 
 ---
 
