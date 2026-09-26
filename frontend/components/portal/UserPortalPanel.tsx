@@ -1,5 +1,6 @@
 "use client";
 
+import { useChainGuard } from "@/hooks/useChainGuard";
 import { useEffect } from "react";
 import { useConnection, useConnect, useConnectors, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { formatEther } from "viem";
@@ -16,6 +17,8 @@ export function UserPortalPanel() {
   const { address, isConnected } = useConnection();
   const connect = useConnect();
   const connectors = useConnectors();
+
+  const { wrongChain } = useChainGuard();
 
   const status = useDefenseStore((s) => s.status);
   const pushAlert = useDefenseStore((s) => s.pushAlert);
@@ -108,7 +111,7 @@ export function UserPortalPanel() {
         {isConnected && !hasStaked && (
           <button
             onClick={() => currentStakeWei && lock.mutate({ ...contractConfig, functionName: "lockStake", value: currentStakeWei as bigint })}
-            disabled={busy || !currentStakeWei}
+            disabled={busy || !currentStakeWei || wrongChain}
             className="w-full px-3 py-2 rounded bg-brand-purple text-white text-sm font-medium hover:bg-brand-purple-dim disabled:opacity-50 transition-colors"
           >
             {lock.isPending || lockReceipt.isLoading ? "Locking…" : `Lock Stake (${aed(requiredStake)})`}
@@ -118,7 +121,7 @@ export function UserPortalPanel() {
         {hasStaked && !hasClaimed && (
           <button
             onClick={() => claim.mutate({ ...contractConfig, functionName: "claimBenefit" })}
-            disabled={busy}
+            disabled={busy || wrongChain}
             className="w-full px-3 py-2 rounded bg-state-safe text-white text-sm font-medium hover:brightness-110 disabled:opacity-50 transition-colors"
           >
             {claim.isPending || claimReceipt.isLoading ? "Claiming…" : `Claim Benefit (${aed(BENEFIT_AMOUNT_AED)})`}
@@ -128,7 +131,7 @@ export function UserPortalPanel() {
         {hasClaimed && !stakeReturned && (
           <button
             onClick={() => withdraw.mutate({ ...contractConfig, functionName: "withdrawStake" })}
-            disabled={busy}
+            disabled={busy || wrongChain}
             className="w-full px-3 py-2 rounded border border-border-strong text-text-primary text-sm font-medium hover:bg-bg-raised disabled:opacity-50 transition-colors"
           >
             {withdraw.isPending || withdrawReceipt.isLoading ? "Withdrawing…" : "Withdraw Stake"}
