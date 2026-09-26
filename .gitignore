@@ -7,3 +7,4 @@ artifacts/
 cache/
 *.log
 .DS_Store
+.env.local
