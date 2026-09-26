@@ -134,6 +134,12 @@ const secondsRemaining = onChainLockTs > 0
 
 const canWithdraw = secondsRemaining === 0 && hasClaimed;
 
+// The pitch says stakes lock for 30 days. For the demo the contract locks for
+// LOCK_DURATION_SEC seconds, so we display it compressed: 1 second = 1 day.
+const LOCK_DAYS = 30;
+const SECONDS_PER_DEMO_DAY = LOCK_DURATION_SEC / LOCK_DAYS;
+const daysRemaining = Math.ceil(secondsRemaining / SECONDS_PER_DEMO_DAY);
+
   return (
     <div className="p-4 space-y-4">
       <div className="space-y-2">
@@ -195,6 +201,7 @@ const canWithdraw = secondsRemaining === 0 && hasClaimed;
         )}
 
         {hasClaimed && !stakeReturned && (
+          <>
           <button
               onClick={() => withdraw.mutate({ ...contractConfig, functionName: "withdrawStake", gas: BigInt(300000) })}
               disabled={busy || wrongChain || !canWithdraw}
@@ -204,8 +211,14 @@ const canWithdraw = secondsRemaining === 0 && hasClaimed;
                 ? "Withdrawing…"
                 : canWithdraw
                 ? "Withdraw Stake"
-                : `Withdraw in ${secondsRemaining}s`}
+                : `Withdraw in ${daysRemaining} day${daysRemaining === 1 ? "" : "s"}`}
             </button>
+            {!canWithdraw && (
+              <p className="text-[11px] text-text-faint text-center">
+                Stake locked for {LOCK_DAYS} days · demo: 1 day = 1 second
+              </p>
+            )}
+          </>
         )}
 
         {stakeReturned && (
