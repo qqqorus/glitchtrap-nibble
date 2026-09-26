@@ -71,10 +71,15 @@ export function UserPortalPanel() {
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-text-muted">Wallet</p>
         {!isConnected ? (
           <button
-            onClick={() => connect.mutate({ connector: connectors[0] })}
-            className="w-full px-3 py-2 rounded border border-brand-purple/60 text-brand-purple hover:bg-brand-purple/10 text-sm font-medium transition-colors"
-          >
-            Connect Wallet
+            onClick={() =>
+              connect.mutate(
+                { connector: connectors[0] },
+                { onError: (err) => pushAlert("danger", `Connect failed: ${err.message}`) }
+              )
+            }
+            disabled={connectors.length === 0}
+            className="w-full px-3 py-2 rounded border border-brand-purple/60 text-brand-purple hover:bg-brand-purple/10 text-sm font-medium transition-colors disabled:opacity-40">
+            {connectors.length === 0 ? "No wallet detected" : "Connect Wallet"}
           </button>
         ) : (
           <div className="flex items-center justify-between px-3 py-2 rounded bg-bg-raised border border-border-subtle">
