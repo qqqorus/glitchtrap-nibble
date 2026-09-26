@@ -108,6 +108,7 @@ contract BenefitsPortal {
             Claim storage c = claims[flaggedWallets[i]];
             if (c.amount > 0 && !c.slashed) {
                 totalSlashed += c.amount;
+                c.amount = 0;
                 c.slashed = true;
             }
         }
@@ -116,6 +117,13 @@ contract BenefitsPortal {
         uint256 treasury = totalSlashed - burned;
         
         slashPending = false;
+
+        if (burned > 0) {
+            (bool burnOk, ) = address(0x000000000000000000000000000000000000dEaD).call{value: burned}("");
+
+            require(burnOk, "Burn failed");
+        }
+
         emit SlashExecuted(burned, treasury);
     }
     
