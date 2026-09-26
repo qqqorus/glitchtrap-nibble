@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Providers } from "./providers";
 import { Rubik_Glitch, VT323, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
 
@@ -39,7 +40,9 @@ export default function RootLayout({
         <div className="checker-floor" aria-hidden />
         <div className="vignette" aria-hidden />
 
-        <main className="relative z-10 min-h-screen">{children}</main>
+        <main className="relative z-10 min-h-screen">
+          <Providers>{children}</Providers>
+        </main>
       </body>
     </html>
   );
