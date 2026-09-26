@@ -19,10 +19,19 @@ type DefenseState = {
 
   pushAlert: (kind: AlertKind, text: string) => void;
   setStatus: (s: SystemStatus) => void;
+  setStakeRequirement: (requiredStake: number, multiplier: number) => void;
+  setAttackerCapital: (amount: number) => void;
+  addAttackerBenefit: (amount: number) => void;
+  setSlashProposal: (proposal: {
+    wallets: number;
+    disputeSeconds: number;
+    deadline: number;
+    reason: string;
+  }) => void;
+  setSlashResults: (burned: number, treasury: number, attackerLoss: number) => void;
   reset: () => void;
 
   runAttack: (opts?: { swarmSize?: number; disputeSeconds?: number }) => void;
-  runSarah: () => void;
 };
 
 const BASE_STAKE = 20;
@@ -53,6 +62,25 @@ export const useDefenseStore = create<DefenseState>((set, get) => ({
 
   setStatus: (status) => set({ status }),
 
+  setStakeRequirement: (requiredStake, multiplier) =>
+    set({ requiredStake, multiplier }),
+
+  setAttackerCapital: (amount) => set({ attackerCapital: amount }),
+
+  addAttackerBenefit: (amount) =>
+    set((s) => ({ attackerBenefits: s.attackerBenefits + amount })),
+
+  setSlashProposal: (proposal) => set({ slashProposal: proposal }),
+
+  setSlashResults: (burned, treasury, attackerLoss) =>
+    set({
+      burned,
+      treasuryGain: treasury,
+      attackerLoss,
+      slashExecuted: true,
+      slashProposal: undefined,
+    }),
+
   reset: () => {
     useGraphStore.getState().reset();
     usePortalStore.getState().reset();
@@ -69,22 +97,6 @@ export const useDefenseStore = create<DefenseState>((set, get) => ({
       slashProposal: undefined,
       slashExecuted: false,
     });
-  },
-
-  runSarah: () => {
-    const { pushAlert } = get();
-    const portal = usePortalStore.getState();
-    const graph = useGraphStore.getState();
-
-    pushAlert("success", "New stake locked: 0xSarah… Amount: 20 AED");
-    portal.setUserAddress("0xSarah0000000000000000000000000000000001");
-    portal.setHasStaked(true);
-    graph.addRealUser("sarah");
-
-    setTimeout(() => {
-      pushAlert("success", "Benefit claimed: 0xSarah… Amount: 200 AED");
-      portal.setHasClaimed(true);
-    }, 900);
   },
 
   runAttack: ({ swarmSize = 1000, disputeSeconds = 30 } = {}) => {

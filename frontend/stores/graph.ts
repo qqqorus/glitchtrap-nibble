@@ -21,6 +21,12 @@ type GraphState = {
 
   addRealUser: (id: string) => void;
   addSwarm: (count: number, masterId: string, visualLimit?: number) => void;
+  addStakeNode: (opts: {
+    address: string;
+    fundingSource?: string;
+    flagged: boolean;
+    isReal: boolean;
+  }) => void;
   flagAll: () => void;
   slashAll: () => void;
   reset: () => void;
@@ -87,6 +93,62 @@ export const useGraphStore = create<GraphState>((set) => ({
       nodes: [master, ...swarm],
       edges,
       swarmSize: count,
+    });
+  },
+
+  addStakeNode: ({ address, fundingSource, flagged, isReal }) => {
+    set((s) => {
+      if (s.nodes.some((n) => n.id === address)) return s;
+
+      if (isReal) {
+        return {
+          ...s,
+          nodes: [
+            ...s.nodes,
+            {
+              id: address,
+              type: "gt",
+              position: { x: 150, y: 150 },
+              data: { kind: "real" },
+            },
+          ],
+        };
+      }
+
+      const idx = s.swarmSize;
+      const newNodes = [...s.nodes];
+      const newEdges = [...s.edges];
+
+      if (fundingSource && !s.nodes.some((n) => n.id === fundingSource)) {
+        newNodes.push({
+          id: fundingSource,
+          type: "gt",
+          position: MASTER_POS,
+          data: { kind: "master" },
+        });
+      }
+
+      newNodes.push({
+        id: address,
+        type: "gt",
+        position: ringPosition(idx, idx + 1),
+        data: { kind: (flagged ? "flagged" : "unverified") as GraphNodeKind },
+      });
+
+      if (fundingSource) {
+        newEdges.push({
+          id: `e-${address}`,
+          source: fundingSource,
+          target: address,
+        });
+      }
+
+      return {
+        ...s,
+        nodes: newNodes,
+        edges: newEdges,
+        swarmSize: s.swarmSize + 1,
+      };
     });
   },
 
