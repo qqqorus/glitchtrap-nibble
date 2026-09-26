@@ -6,7 +6,7 @@ contract BenefitsPortal {
     
     uint256 public baseStake = 0.001 ether;   // ~20 AED on testnet
     uint256 public stakeMultiplier = 1;
-    uint256 public lockDuration = 60;          // 60 seconds for demo
+    uint256 public lockDuration = 10;          // 10 seconds for demo
     uint256 public constant BENEFIT_AMOUNT = 0.01 ether; // ~200 AED
     
     struct Claim {

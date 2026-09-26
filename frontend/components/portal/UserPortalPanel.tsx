@@ -47,7 +47,7 @@ export function UserPortalPanel() {
     query: { enabled: !!address, refetchInterval: 3000 },
   });
 
-  
+
   const requiredStake = currentStakeWei ? toAed(currentStakeWei as bigint) : 20;
 
   const lock = useWriteContract();
@@ -63,6 +63,41 @@ export function UserPortalPanel() {
   useEffect(() => {
     if (address) setUserAddress(address);
   }, [address, setUserAddress]);
+
+  useEffect(() => {
+    if (!address) {
+      setHasStaked(false);
+      setHasClaimed(false);
+      setStakeReturned(false);
+      return;
+    }
+
+    const [amount, , claimed, , slashed] = (claimData ?? [0n, 0n, false, false, false]) as readonly [
+      bigint,
+      bigint,
+      boolean,
+      boolean,
+      boolean
+    ];
+
+    setHasStaked(amount > 0n && !slashed);
+    setHasClaimed(claimed);
+    setStakeReturned(!!hasWithdrawnOnChain);
+  }, [
+    address,
+    claimData,
+    hasWithdrawnOnChain,
+    setHasStaked,
+    setHasClaimed,
+    setStakeReturned,
+  ]);
+
+  useEffect(() => {
+    if (lockReceipt.isSuccess) {
+      setHasStaked(true);
+      pushAlert("success", `Stake locked: ${aed(requiredStake)}`);
+    }
+  }, [lockReceipt.isSuccess]);
 
   useEffect(() => {
     if (lockReceipt.isSuccess && address) {
