@@ -11,8 +11,9 @@ export const hardhatLocal = defineChain({
 
 export const wagmiConfig = createConfig({
   chains: [hardhatLocal],
-  connectors: [injected()],
+  connectors: [injected({ target: "metaMask" })],
   transports: {
     [hardhatLocal.id]: http("http://127.0.0.1:8545"),
   },
+  ssr: true,
 });
