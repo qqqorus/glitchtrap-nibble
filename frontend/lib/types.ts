@@ -19,14 +19,33 @@ export type GraphNodeKind =
 export type GraphNodeData = {
   kind: GraphNodeKind;
   label?: string;
-  delayMs?: number; // stagger offset for the flood-in animation
 };
 
 export type WsMessage =
-  | { type: "STAKE_LOCKED"; address: string; amount: number; fundingSource?: string; isReal?: boolean; timestamp: number }
-  | { type: "BENEFIT_CLAIMED"; address: string; amount: number; timestamp: number }
+  | {
+      type: "STAKE_LOCKED";
+      address: string;
+      amount: number;
+      fundingSource?: string;
+      isReal: boolean;
+      flagged: boolean;
+      timestamp: number;
+    }
+  | {
+      type: "BENEFIT_CLAIMED";
+      address: string;
+      amount: number;
+      isReal: boolean;
+      timestamp: number;
+    }
   | { type: "STAKE_RETURNED"; address: string; timestamp: number }
-  | { type: "ATTACK_DETECTED"; reason: string; wallets: string[]; multiplier: number; timestamp: number }
+  | {
+      type: "ATTACK_DETECTED";
+      reason: string;
+      wallets: string[];
+      multiplier: number;
+      timestamp: number;
+    }
   | { type: "STAKE_REQUIREMENT_UPDATED"; requiredStake: number; multiplier: number }
   | { type: "CAPITAL_LOCKED"; amount: number }
   | { type: "SLASH_PROPOSAL"; wallets: string[]; reason: string; disputeSeconds: number }
