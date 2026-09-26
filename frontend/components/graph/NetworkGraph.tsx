@@ -5,6 +5,7 @@ import { ReactFlow, Background, BackgroundVariant, type Node, type Edge } from "
 import "@xyflow/react/dist/style.css";
 import { useGraphStore } from "@/stores/graph";
 import { GtNode } from "./GtNode";
+import { FLOOD_DURATION_MS } from "@/stores/graph";
 
 const nodeTypes = { gt: GtNode };
 
@@ -26,12 +27,16 @@ export function NetworkGraph() {
 
   const edges: Edge[] = useMemo(
     () =>
-      storeEdges.map((e) => ({
+      storeEdges.map((e, i) => ({
         id: e.id,
         source: e.source,
         target: e.target,
-        animated: true,
-        style: { stroke: "var(--color-state-danger)", strokeWidth: 1, opacity: 0.4 },
+        style: {
+          stroke: "var(--color-state-danger)",
+          strokeWidth: 1,
+          opacity: 0,
+          animation: `edge-fade-in 0.4s ease-out ${(i / storeEdges.length) * FLOOD_DURATION_MS}ms forwards`,
+        },
       })),
     [storeEdges]
   );
