@@ -19,6 +19,7 @@ export type GraphNodeKind =
 export type GraphNodeData = {
   kind: GraphNodeKind;
   label?: string;
+  delayMs?: number; // stagger offset for the flood-in animation
 };
 
 export type WsMessage =
