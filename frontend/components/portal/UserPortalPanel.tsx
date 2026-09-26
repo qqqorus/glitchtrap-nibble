@@ -9,6 +9,7 @@ import { useDefenseStore } from "@/stores/defense";
 import { contractConfig, AED_PER_ETH } from "@/lib/contract";
 import { cn } from "@/lib/cn";
 import { aed, shortAddr } from "@/lib/format";
+import { useGraphStore } from "@/stores/graph";
 
 const toAed = (wei: bigint) => Math.round(Number(formatEther(wei)) * AED_PER_ETH);
 const BENEFIT_AMOUNT_AED = 200; // matches BENEFIT_AMOUNT constant in BenefitsPortal.sol
@@ -41,13 +42,16 @@ export function UserPortalPanel() {
   const claimReceipt = useWaitForTransactionReceipt({ hash: claim.data });
   const withdrawReceipt = useWaitForTransactionReceipt({ hash: withdraw.data });
 
+  const addRealUser = useGraphStore((s) => s.addRealUser);
+
   useEffect(() => {
     if (address) setUserAddress(address);
   }, [address, setUserAddress]);
 
   useEffect(() => {
-    if (lockReceipt.isSuccess) {
+    if (lockReceipt.isSuccess && address) {
       setHasStaked(true);
+      addRealUser(address);
       pushAlert("success", `Stake locked: ${aed(requiredStake)}`);
     }
   }, [lockReceipt.isSuccess]);
@@ -110,7 +114,7 @@ export function UserPortalPanel() {
       <div className="space-y-2 pt-2 border-t border-border-subtle">
         {isConnected && !hasStaked && (
           <button
-            onClick={() => currentStakeWei && lock.mutate({ ...contractConfig, functionName: "lockStake", value: currentStakeWei as bigint })}
+            onClick={() => currentStakeWei && lock.mutate({ ...contractConfig, functionName: "lockStake", value: currentStakeWei as bigint, gas: BigInt(300000) })}
             disabled={busy || !currentStakeWei || wrongChain}
             className="w-full px-3 py-2 rounded bg-brand-purple text-white text-sm font-medium hover:bg-brand-purple-dim disabled:opacity-50 transition-colors"
           >
@@ -120,7 +124,7 @@ export function UserPortalPanel() {
 
         {hasStaked && !hasClaimed && (
           <button
-            onClick={() => claim.mutate({ ...contractConfig, functionName: "claimBenefit" })}
+            onClick={() => claim.mutate({ ...contractConfig, functionName: "claimBenefit", gas: BigInt(300000) })}
             disabled={busy || wrongChain}
             className="w-full px-3 py-2 rounded bg-state-safe text-white text-sm font-medium hover:brightness-110 disabled:opacity-50 transition-colors"
           >
@@ -130,7 +134,7 @@ export function UserPortalPanel() {
 
         {hasClaimed && !stakeReturned && (
           <button
-            onClick={() => withdraw.mutate({ ...contractConfig, functionName: "withdrawStake" })}
+            onClick={() => withdraw.mutate({ ...contractConfig, functionName: "withdrawStake", gas: BigInt(300000) })}
             disabled={busy || wrongChain}
             className="w-full px-3 py-2 rounded border border-border-strong text-text-primary text-sm font-medium hover:bg-bg-raised disabled:opacity-50 transition-colors"
           >
