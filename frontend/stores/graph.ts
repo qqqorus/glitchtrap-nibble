@@ -26,13 +26,23 @@ type GraphState = {
   reset: () => void;
 };
 
-const MASTER_POS = { x: 600, y: 400 };
 
-function starPosition(i: number, total: number, radius: number) {
-  const angle = (i / total) * Math.PI * 2;
+export const FLOOD_DURATION_MS = 2400; // matches the "flood in over ~2-3s" beat from the demo script
+
+const MASTER_POS = { x: 600, y: 400 };
+const RING_CAPACITY = 60;
+
+function ringPosition(i: number, visual: number) {
+  const ring = Math.floor(i / RING_CAPACITY);
+  const ringStart = ring * RING_CAPACITY;
+  const countInRing = Math.min(RING_CAPACITY, visual - ringStart);
+  const indexInRing = i - ringStart;
+  const angle = (indexInRing / countInRing) * Math.PI * 2 + ring * 0.4;
+  const baseRadius = 140 + ring * 90;
+  const jitter = (Math.sin(i * 12.9898) * 0.5 + 0.5) * 16 - 8; // deterministic, no Math.random() flicker on re-render
   return {
-    x: MASTER_POS.x + Math.cos(angle) * radius,
-    y: MASTER_POS.y + Math.sin(angle) * radius,
+    x: MASTER_POS.x + Math.cos(angle) * (baseRadius + jitter),
+    y: MASTER_POS.y + Math.sin(angle) * (baseRadius + jitter),
   };
 }
 
@@ -42,18 +52,13 @@ export const useGraphStore = create<GraphState>((set) => ({
   swarmSize: 0,
 
   addRealUser: (id) => {
-    set((s) => ({
-      nodes: [
-        ...s.nodes,
-        {
-          id,
-          type: "gt",
-          position: { x: 150, y: 150 },
-          data: { kind: "real" },
-        },
-      ],
-    }));
-  },
+  set((s) => {
+    if (s.nodes.some((n) => n.id === id)) return s; // already added, skip
+    return {
+      nodes: [...s.nodes, { id, type: "gt", position: { x: 150, y: 150 }, data: { kind: "real" } }],
+    };
+  });
+},
 
   addSwarm: (count, masterId, visualLimit = 400) => {
     const visual = Math.min(count, visualLimit);
@@ -72,8 +77,8 @@ export const useGraphStore = create<GraphState>((set) => ({
       swarm.push({
         id,
         type: "gt",
-        position: starPosition(i, visual, 620),
-        data: { kind: "unverified" },
+        position: ringPosition(i, visual),
+        data: { kind: "unverified", delayMs: (i / visual) * FLOOD_DURATION_MS },
       });
       edges.push({ id: `e-${i}`, source: masterId, target: id });
     }
