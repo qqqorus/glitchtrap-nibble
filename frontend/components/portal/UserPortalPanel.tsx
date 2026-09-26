@@ -1,7 +1,7 @@
 "use client";
 
 import { useChainGuard } from "@/hooks/useChainGuard";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useConnection, useConnect, useConnectors, useReadContract, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { formatEther } from "viem";
 import { usePortalStore } from "@/stores/portal";
@@ -26,6 +26,9 @@ export function UserPortalPanel() {
   const elevated = status === "UNDER_ATTACK" || status === "DEFENDED";
 
   const { hasStaked, hasClaimed, stakeReturned, setUserAddress, setHasStaked, setHasClaimed, setStakeReturned } = usePortalStore();
+
+  const [lockTimestamp, setLockTimestamp] = useState<number | null>(null);
+  const [now, setNow] = useState(Date.now());
 
   const { data: currentStakeWei } = useReadContract({
     ...contractConfig,
@@ -65,6 +68,11 @@ export function UserPortalPanel() {
   }, [address, setUserAddress]);
 
   useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
     if (!address) {
       setHasStaked(false);
       setHasClaimed(false);
@@ -95,14 +103,7 @@ export function UserPortalPanel() {
   useEffect(() => {
     if (lockReceipt.isSuccess) {
       setHasStaked(true);
-      pushAlert("success", `Stake locked: ${aed(requiredStake)}`);
-    }
-  }, [lockReceipt.isSuccess]);
-
-  useEffect(() => {
-    if (lockReceipt.isSuccess && address) {
-      setHasStaked(true);
-      addRealUser(address);
+      setLockTimestamp(Date.now());
       pushAlert("success", `Stake locked: ${aed(requiredStake)}`);
     }
   }, [lockReceipt.isSuccess]);
@@ -122,6 +123,12 @@ export function UserPortalPanel() {
   }, [withdrawReceipt.isSuccess]);
 
   const busy = lock.isPending || lockReceipt.isLoading || claim.isPending || claimReceipt.isLoading || withdraw.isPending || withdrawReceipt.isLoading;
+
+  const LOCK_DURATION_SEC =30;
+  const secondsRemaining = lockTimestamp
+    ? Math.max(0, LOCK_DURATION_SEC - Math.floor((now - lockTimestamp) / 1000))
+    : 0;
+  const canWithdraw = secondsRemaining === 0;
 
   return (
     <div className="p-4 space-y-4">
@@ -184,13 +191,22 @@ export function UserPortalPanel() {
         )}
 
         {hasClaimed && !stakeReturned && (
-          <button
-            onClick={() => withdraw.mutate({ ...contractConfig, functionName: "withdrawStake", gas: BigInt(300000) })}
-            disabled={busy || wrongChain}
-            className="w-full px-3 py-2 rounded border border-border-strong text-text-primary text-sm font-medium hover:bg-bg-raised disabled:opacity-50 transition-colors"
-          >
-            {withdraw.isPending || withdrawReceipt.isLoading ? "Withdrawing…" : "Withdraw Stake"}
-          </button>
+          <>
+            <p className="text-xs text-state-warn text-center">
+              DEBUG: lockTimestamp={String(lockTimestamp)} now={now} secondsRemaining={secondsRemaining}
+            </p>
+            <button
+              onClick={() => withdraw.mutate({ ...contractConfig, functionName: "withdrawStake", gas: BigInt(300000) })}
+              disabled={busy || wrongChain || !canWithdraw}
+              className="w-full px-3 py-2 rounded border border-border-strong text-text-primary text-sm font-medium hover:bg-bg-raised disabled:opacity-50 transition-colors"
+            >
+              {withdraw.isPending || withdrawReceipt.isLoading
+                ? "Withdrawing…"
+                : canWithdraw
+                ? "Withdraw Stake"
+                : `Withdraw in ${secondsRemaining}s`}
+            </button>
+          </>
         )}
 
         {stakeReturned && (
