@@ -4,6 +4,9 @@ import { Panel } from "@/components/layout/Panel";
 import { Wordmark } from "@/components/brand/Wordmark";
 import { UserPortalPanel } from "@/components/portal/UserPortalPanel";
 import { useDefenseStore } from "@/stores/defense";
+import { NetworkGraph } from "@/components/graph/NetworkGraph";
+import { DefenseStats } from "@/components/dashboard/DefenseStats";
+import { AlertFeed } from "@/components/dashboard/AlertFeed";
 
 export default function Home() {
   const runAttack = useDefenseStore((s) => s.runAttack);
@@ -20,11 +23,13 @@ export default function Home() {
         </Panel>
 
         <Panel title="Network Graph">
-          <div className="p-4 text-sm text-text-muted">Graph — Phase 4</div>
+          <NetworkGraph />
         </Panel>
 
         <Panel title="Defense Dashboard">
-          <div className="p-4 space-y-2">
+          <div className="p-4 space-y-4">
+            <DefenseStats/>
+            <AlertFeed />
             <button
               onClick={runSarah}
               className="block w-full text-left px-3 py-2 rounded border border-border-subtle hover:bg-bg-raised text-sm"
