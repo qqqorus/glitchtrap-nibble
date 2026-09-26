@@ -61,7 +61,7 @@ We **don't try to detect bots**. We assume everyone could be a bot and use **cry
                                      └────────────────┘
 ```
 
-- **Sarah** talks to the contract directly through MetaMask. The backend sees her transactions via contract events.
+- **Sarah** (a real user example) talks to the contract directly through MetaMask. The backend sees her transactions via contract events.
 - **The swarm** is simulated off-chain (1,000 wallets in ~5 seconds) and fed to the backend, which runs detection exactly as it would for on-chain events.
 - **The backend** is the contract owner. It raises the stake and submits and executes slashes on-chain, and pushes every event to the dashboard over WebSocket.
 
